@@ -258,3 +258,16 @@ class DCNN(object):
         prob = self.predict_proba(X)
         self.is_training = True
         return np.argmax(prob, axis=1)
+
+def mnist_reformat_pad(xs, batch_size=None):
+    if batch_size is None:
+        batch_size = xs.shape[0]
+    xs = (np.reshape(xs,[batch_size,28,28,1]) - 0.5) * 2.0 #Transform range between -1 and 1
+    xs = np.lib.pad(xs, ((0,0),(2,2),(2,2),(0,0)),'constant', constant_values=(-1, -1)) #Pad resize 32x32
+    return xs
+
+def mnist_reformat_28x28(xs, batch_size=None):
+    if batch_size is None:
+        batch_size = xs.shape[0]
+    xs = (np.reshape(xs,[batch_size,28,28,1]) - 0.5) * 2.0 #Transform range between -1 and 1
+    return xs
