@@ -1,3 +1,13 @@
+import tensorflow as tf
+import numpy as np
+from tensorflow.examples.tutorials.mnist import input_data
+import matplotlib.pyplot as plt
+import tensorflow.contrib.slim as slim
+import os
+from sklearn import metrics
+import time
+import pickle
+
 class DCNN(object):
     def __init__(self, x_dim, x_ch, y_dim, conv_units, hidden_units,
                  kernel_sizes=[5,5], strides=[1, 1], paddings='SAME',
