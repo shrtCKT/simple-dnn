@@ -244,18 +244,19 @@ class DCNN(object):
         with self.graph.as_default():
             self.saver.restore(self.sess, model_file)
     
-    def predict_proba(self, X):
+    def predict_proba(self, X, reformat=True):
         self.is_training = False
         with self.graph.as_default():
             prob = self.sess.run(
                 self.prob, 
-                feed_dict={self.x:self.x_reformat(X) if self.x_reformat is not None else X})
+                feed_dict={self.x:self.x_reformat(X) 
+                            if self.x_reformat is not None and reformat else X})
         self.is_training = True
         return prob
     
-    def predict(self, X):
+    def predict(self, X, reformat=True):
         self.is_training = False
-        prob = self.predict_proba(X)
+        prob = self.predict_proba(X, reformat=reformat)
         self.is_training = True
         return np.argmax(prob, axis=1)
 
