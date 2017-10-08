@@ -93,11 +93,11 @@ class DiscriminatorDC(object):
         # Output logits
         if logits:
             d_out = slim.fully_connected(
-                net, self.y_dim + 1, activation_fn=None, reuse=reuse, scope='d_out',
+                net, self.y_dim if self.y_dim == 1 else self.y_dim + 1, activation_fn=None, reuse=reuse, scope='d_out',
                 weights_initializer=tf.truncated_normal_initializer(stddev=0.01))
         else:
             d_out = slim.fully_connected(
-                net, self.y_dim + 1, activation_fn=tf.nn.sigmoid, reuse=reuse, scope='d_out',
+                net, self.y_dim if self.y_dim == 1 else self.y_dim + 1, activation_fn=tf.nn.sigmoid, reuse=reuse, scope='d_out',
                 weights_initializer=tf.truncated_normal_initializer(stddev=0.01))
         return d_out, fm_layer
 
