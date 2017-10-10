@@ -10,8 +10,10 @@ class DiscriminatorDC(object):
                  kernel_sizes=[5,5], strides=[2, 2], paddings='SAME',
                  d_activation_fn=tf.contrib.keras.layers.LeakyReLU,     # Conv Layers
                  f_activation_fns=tf.nn.relu,                           # Fully connected
-                 dropout=False, keep_prob=0.5):
+                 dropout=False, keep_prob=0.5,
+                 batch_norm=True):
         self.y_dim = y_dim
+        self.batch_norm = batch_norm
         ######################## Discremenator
         # Conv layer config
         self.conv_units = conv_units
@@ -59,7 +61,7 @@ class DiscriminatorDC(object):
                 self.conv_units, self.kernel_sizes, self.strides, self.paddings)):
                 # Conv
                 net = slim.conv2d(net, c_unit, kernel_size, stride=stride,
-                                normalizer_fn=slim.batch_norm,
+                                normalizer_fn=slim.batch_norm if self.batch_norm else None,
                                 padding=padding, scope='d_conv{0}'.format(i))
                 if self.matching_layer is not None and i == self.matching_layer:
                     fm_layer = net
@@ -72,9 +74,10 @@ class DiscriminatorDC(object):
                             weights_initializer=tf.truncated_normal_initializer(stddev=0.02)):
             for i, (h_unit, activation_fn) in enumerate(zip(
                 self.hidden_units, self.f_activation_fns)):
-                net = slim.fully_connected(net, h_unit, normalizer_fn=slim.batch_norm,
-                                            activation_fn=activation_fn,
-                                            reuse=reuse, scope='d_full{0}'.format(i))
+                net = slim.fully_connected(
+                    net, h_unit, normalizer_fn=slim.batch_norm if self.batch_norm else None,
+                    activation_fn=activation_fn,
+                    reuse=reuse, scope='d_full{0}'.format(i))
                 if self.dropout:
                     net = slim.dropout(net, keep_prob=self.keep_prob, is_training=self.is_training)
         return net
@@ -93,11 +96,13 @@ class DiscriminatorDC(object):
         # Output logits
         if logits:
             d_out = slim.fully_connected(
-                net, self.y_dim if self.y_dim == 1 else self.y_dim + 1, activation_fn=None, reuse=reuse, scope='d_out',
+                net, self.y_dim if self.y_dim == 1 else self.y_dim + 1, activation_fn=None, 
+                reuse=reuse, scope='d_out',
                 weights_initializer=tf.truncated_normal_initializer(stddev=0.01))
         else:
             d_out = slim.fully_connected(
-                net, self.y_dim if self.y_dim == 1 else self.y_dim + 1, activation_fn=tf.nn.sigmoid, reuse=reuse, scope='d_out',
+                net, self.y_dim if self.y_dim == 1 else self.y_dim + 1, activation_fn=tf.nn.sigmoid, 
+                reuse=reuse, scope='d_out',
                 weights_initializer=tf.truncated_normal_initializer(stddev=0.01))
         return d_out, fm_layer
 
