@@ -258,7 +258,7 @@ class MultiClassGAN(BaseGAN):
         # Placeholders
         self.z_in = tf.placeholder(shape=[None,self.z_size], dtype=tf.float32) #Random vector
         self.real_in = tf.placeholder(
-          shape=[None, self.x_dims[0], self.x_dims[1], 1], dtype=tf.float32) #Real images
+          shape=[None] + self.x_dims + [self.x_ch], dtype=tf.float32) #Real images
         self.real_label = tf.placeholder(
           shape=[None, self.y_dim + 1], dtype=tf.float32) #real image labels
         self.fake_label = tf.placeholder(
