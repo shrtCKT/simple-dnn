@@ -81,7 +81,17 @@ class Autoencoder(object):
     start_index = np.random.randint(0, X.shape[0] - batch_size)
     return X[start_index:(start_index + batch_size)]
 
+  def _iter_stats(self, i, start_time, loss):
+    if i == 0:
+        print '{0:5}| {1:8}| {2:4}'.format(
+            'i', 'Loss', 'TIME')
+
+        print '{0:5}| {1:8.4}| {2:4}s'.format(
+            i, loss, int(time.time() - start_time))
+
+
   def fit(self, X):
+    start = time.time()
     with self.graph.as_default():
         n_samples = X.shape[0]
         for epoch in range(self.training_epochs):
@@ -96,11 +106,10 @@ class Autoencoder(object):
                 avg_cost += cost / n_samples * self.batch_size
                 
             if self.display_step > 0 and epoch % self.display_step == 0:
-                print("Epoch:", '%04d' % (epoch + 1),
-                      "cost=", "{:.9f}".format(avg_cost))
+                self._iter_stats(epoch, start_time, avg_cost)
+
         if self.display_step > 0:
-          print("Final Epoch:", '%04d' % (epoch + 1), 
-                "cost=", "{:.9f}".format(avg_cost))
+            self._iter_stats(epoch, start_time, avg_cost)
 
   def _partial_fit(self, batch_x):
     _, cost = self.sess.run((self.train_op, self.cost),
