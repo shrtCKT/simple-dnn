@@ -150,7 +150,7 @@ class StackedAutoencoder:
   def __init__(self, x_dim, hidden_dim,
                optimizer=tf.train.AdamOptimizer(), batch_size=128, 
                training_epochs=100, display_step=-1,
-               activation_fn=tf.nn.relu):
+               activation_fn=tf.nn.relu, output_activation_fn=None):
     self.x_dim = x_dim
     if isinstance(hidden_dim, list):
       self.hidden_dim = hidden_dim
@@ -161,6 +161,7 @@ class StackedAutoencoder:
     self.training_epochs = training_epochs
     self.display_step = display_step
     self.activation_fn = activation_fn
+    self.output_activation_fn = output_activation_fn
     
     self.stack = []
   
@@ -174,7 +175,7 @@ class StackedAutoencoder:
                        training_epochs=self.training_epochs, 
                        display_step=self.display_step,
                        activation_fn=self.activation_fn, 
-                       output_layer='both' if i == 0 else 'non_linear')
+                       output_activation_fn=self.output_activation_fn)
       hidden = ae.fit_transform(hidden)
       self.stack.append(ae)
   
