@@ -4,6 +4,8 @@
 import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
+import time
+
 
 class Autoencoder(object):
   """ Variational Autoencoder Implementation.
@@ -86,12 +88,12 @@ class Autoencoder(object):
         print '{0:5}| {1:8}| {2:4}'.format(
             'i', 'Loss', 'TIME')
 
-        print '{0:5}| {1:8.4}| {2:4}s'.format(
-            i, loss, int(time.time() - start_time))
+    print '{0:5}| {1:8.4}| {2:4}s'.format(
+      i, loss, int(time.time() - start_time))
 
 
   def fit(self, X):
-    start = time.time()
+    start_time = time.time()
     with self.graph.as_default():
         n_samples = X.shape[0]
         for epoch in range(self.training_epochs):
@@ -106,7 +108,7 @@ class Autoencoder(object):
                 avg_cost += cost / n_samples * self.batch_size
                 
             if self.display_step > 0 and epoch % self.display_step == 0:
-                self._iter_stats(epoch, start_time, avg_cost)
+              self._iter_stats(epoch, start_time, avg_cost)
 
         if self.display_step > 0:
             self._iter_stats(epoch, start_time, avg_cost)
@@ -187,3 +189,20 @@ class StackedAutoencoder:
     self.fit(X)
     return self.transform(X)
   
+
+
+
+# from tensorflow.examples.tutorials.mnist import input_data
+# mnist = input_data.read_data_sets("data/MNIST_data/", 
+#                                   one_hot=True)
+
+# ae = StackedAutoencoder(
+#     28*28, [10, 5],
+#     optimizer=tf.train.AdamOptimizer(), 
+#     batch_size=128, 
+#     training_epochs=4, 
+#     display_step=1,
+#     activation_fn=tf.nn.relu, 
+#     output_activation_fn=None)
+
+# ae.fit(mnist.train.images)
