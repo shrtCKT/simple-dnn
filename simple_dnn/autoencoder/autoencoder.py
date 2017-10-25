@@ -55,7 +55,7 @@ class Autoencoder(object):
     """
     net = hidden
     net = slim.fully_connected(
-        net, self.x_dim, activation_fn=output_activation_fn,
+        net, self.x_dim, activation_fn=self.output_activation_fn,
         weights_initializer=tf.contrib.layers.xavier_initializer(),
         scope='dec')
     return net
@@ -169,13 +169,11 @@ class StackedAutoencoder:
     hidden = X
     for i, dim in enumerate(self.hidden_dim):
       input_dim = hidden.shape[1]
-      ae = Autoencoder(input_dim, dim,
-                       optimizer=self.optimizer, 
-                       batch_size=self.batch_size, 
-                       training_epochs=self.training_epochs, 
-                       display_step=self.display_step,
-                       activation_fn=self.activation_fn, 
-                       output_activation_fn=self.output_activation_fn)
+      ae = Autoencoder(
+        input_dim, dim, optimizer=self.optimizer, 
+        batch_size=self.batch_size,  training_epochs=self.training_epochs, 
+        display_step=self.display_step, activation_fn=self.activation_fn, 
+        output_activation_fn=self.output_activation_fn if i == 0 else tf.nn.relu)
       hidden = ae.fit_transform(hidden)
       self.stack.append(ae)
   
