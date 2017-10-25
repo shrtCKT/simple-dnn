@@ -202,9 +202,9 @@ class StackedAutoencoder:
     return net
 
 
-from tensorflow.examples.tutorials.mnist import input_data
-mnist = input_data.read_data_sets("data/MNIST_data/", 
-                                  one_hot=True)
+# from tensorflow.examples.tutorials.mnist import input_data
+# mnist = input_data.read_data_sets("data/MNIST_data/", 
+#                                   one_hot=True)
 
 # ae = Autoencoder(
 #     28*28, 10,
