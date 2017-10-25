@@ -130,7 +130,7 @@ class Autoencoder(object):
 
   def reconstruct(self, X):
     with self.graph.as_default():
-      return self.sess.run(self.reconshiddentructed, 
+      return self.sess.run(self.reconstructed, 
                            feed_dict={self.x: X})
 
   def reconstruct_cost(self, X):
@@ -196,8 +196,8 @@ class StackedAutoencoder:
 # mnist = input_data.read_data_sets("data/MNIST_data/", 
 #                                   one_hot=True)
 
-# ae = StackedAutoencoder(
-#     28*28, [10, 5],
+# ae = Autoencoder(
+#     28*28, 10,
 #     optimizer=tf.train.AdamOptimizer(), 
 #     batch_size=128, 
 #     training_epochs=4, 
@@ -206,3 +206,6 @@ class StackedAutoencoder:
 #     output_activation_fn=None)
 
 # ae.fit(mnist.train.images)
+# print ae.reconstruct(mnist.train.images).shape
+# print ae.reconstruct_cost(mnist.train.images).shape
+# print ae.transform(mnist.train.images).shape
