@@ -69,6 +69,7 @@ class Autoencoder(object):
       # Input placeholders
       with tf.name_scope('data'):
         self.x = tf.placeholder(tf.float32, [None, self.x_dim])
+        self.hidden = tf.placeholder(tf.float32, [None, self.hidden_dim])
 
       self.hidden = self.encoder(x=self.x)
 
@@ -133,6 +134,11 @@ class Autoencoder(object):
       return self.sess.run(self.reconstructed, 
                            feed_dict={self.x: X})
 
+  def reconstruct_from_hidden(self, Z):
+    with self.graph.as_default():
+      return self.sess.run(self.reconstructed, 
+                           feed_dict={self.hidden: Z})
+
   def reconstruct_cost(self, X):
     with self.graph.as_default():
       return self.sess.run(self.recon_cost,
@@ -189,12 +195,16 @@ class StackedAutoencoder:
     self.fit(X)
     return self.transform(X)
   
+  def reconstruct(self, X):
+    net = self.transform(X)
+    for i in range(len(self.hidden_dim)-1, -1, -1):
+      net = self.stack[i].reconstruct_from_hidden(net)
+    return net
 
 
-
-# from tensorflow.examples.tutorials.mnist import input_data
-# mnist = input_data.read_data_sets("data/MNIST_data/", 
-#                                   one_hot=True)
+from tensorflow.examples.tutorials.mnist import input_data
+mnist = input_data.read_data_sets("data/MNIST_data/", 
+                                  one_hot=True)
 
 # ae = Autoencoder(
 #     28*28, 10,
@@ -209,3 +219,18 @@ class StackedAutoencoder:
 # print ae.reconstruct(mnist.train.images).shape
 # print ae.reconstruct_cost(mnist.train.images).shape
 # print ae.transform(mnist.train.images).shape
+# print ae.reconstruct_from_hidden(ae.transform(mnist.train.images)).shape
+
+
+# sae = StackedAutoencoder(
+#     28*28, [10, 5],
+#     optimizer=tf.train.AdamOptimizer(), 
+#     batch_size=128, 
+#     training_epochs=4, 
+#     display_step=1,
+#     activation_fn=tf.nn.relu, 
+#     output_activation_fn=None)
+
+# sae.fit(mnist.train.images)
+# print sae.reconstruct(mnist.train.images).shape
+# print sae.transform(mnist.train.images).shape
