@@ -37,6 +37,36 @@ def reshape_pad(input_shape_2d, desired_shape_2d, input_ch, pad=True, pad_value=
 
   return reshape
 
+def flatten_unpad(input_shape_2d, desired_shape_2d, input_ch):
+  """
+  Unpadd a 4D array (batch, dim1, dim2, channel) along dim1 and dim2
+  then flatten into 2d array
+    :param input_shape_2d: [input_image_width, input_image_height]
+    :param desired_shape_2d: [desired_image_width, desired_image_height]
+    :param input_ch:  input image channels.
+  """
+  assert (desired_shape_2d[0] - input_shape_2d[0]) % 2 == 0
+  assert (desired_shape_2d[1] - input_shape_2d[1]) % 2 == 0
+  assert desired_shape_2d[0] <= input_shape_2d[0]
+  assert desired_shape_2d[1] <= input_shape_2d[1]
+  axis_1_pad_size = (input_shape_2d[0] - desired_shape_2d[0]) / 2
+  axis_2_pad_size = (input_shape_2d[1] - desired_shape_2d[1]) / 2
+
+  def reshape(xs):
+    """ Reshapes and paddes xs.
+      :param xs: a 2d array
+    """
+    assert len(xs.shape) == 4
+    batch_size = xs.shape[0]
+
+    if axis_1_pad_size > 0 and axis_2_pad_size > 0:
+        xs = xs[:,axis_1_pad_size:-axis_1_pad_size,axis_2_pad_size:-axis_2_pad_size,:]
+        
+    print xs.shape
+    return np.reshape(xs, [batch_size, desired_shape_2d[0] * desired_shape_2d[1] * input_ch])
+
+  return reshape
+
 class NormalScale(object):
     """Normalize each dimension to mean = zero and var = scale_factor"""
     def __init__(self, train_X, scale_factor=0.5):

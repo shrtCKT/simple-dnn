@@ -106,3 +106,61 @@ class DiscriminatorDC(object):
                 weights_initializer=tf.truncated_normal_initializer(stddev=0.01))
         return d_out, fm_layer
 
+class DiscriminatorFlat(object):
+    """ Fully connected Discriminator.
+    """
+    def __init__(self, y_dim,
+                 hidden_units,
+                 f_activation_fns=tf.nn.relu,                           # Fully connected
+                 dropout=False, keep_prob=0.5,
+                 batch_norm=True):
+        self.y_dim = y_dim
+        self.batch_norm = batch_norm
+        ######################## Discremenator
+        # Fully connected layer config
+        self.hidden_units = hidden_units
+        if not isinstance(f_activation_fns, list) and  self.hidden_units is not None:
+            self.f_activation_fns = [f_activation_fns] * len(self.hidden_units)
+        else:
+            self.f_activation_fns = f_activation_fns
+
+        ######################## Training Config
+        self.dropout = dropout
+        self.keep_prob = keep_prob
+        self.matching_layer = None
+        self.is_training = True
+
+    def build_full(self, net, reuse=False):
+        with slim.arg_scope([slim.fully_connected], 
+                            weights_initializer=tf.truncated_normal_initializer(stddev=0.02)):
+            for i, (h_unit, activation_fn) in enumerate(zip(
+                self.hidden_units, self.f_activation_fns)):
+                net = slim.fully_connected(
+                    net, h_unit, normalizer_fn=slim.batch_norm if self.batch_norm else None,
+                    activation_fn=activation_fn,
+                    reuse=reuse, scope='d_full{0}'.format(i))
+                if self.dropout:
+                    net = slim.dropout(net, keep_prob=self.keep_prob, is_training=self.is_training)
+        return net
+        
+    def __call__(self, x, reuse=False, logits=True, matching_layer=None):
+        self.matching_layer = matching_layer
+
+        net = slim.flatten(x)
+
+        # Fully Connected Layers
+        if self.hidden_units is not None:
+            net = self.build_full(net, reuse=reuse)
+
+        # Output logits
+        if logits:
+            d_out = slim.fully_connected(
+                net, self.y_dim if self.y_dim == 1 else self.y_dim + 1, activation_fn=None, 
+                reuse=reuse, scope='d_out',
+                weights_initializer=tf.truncated_normal_initializer(stddev=0.01))
+        else:
+            d_out = slim.fully_connected(
+                net, self.y_dim if self.y_dim == 1 else self.y_dim + 1, activation_fn=tf.nn.sigmoid, 
+                reuse=reuse, scope='d_out',
+                weights_initializer=tf.truncated_normal_initializer(stddev=0.01))
+        return d_out, None

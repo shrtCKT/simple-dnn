@@ -79,3 +79,61 @@ class GeneratorDC(object):
             scope='g_out', weights_initializer=tf.truncated_normal_initializer(stddev=0.02))
 
         return g_out
+
+
+class GeneratorFlat(object):
+    """ Fully Connected Conditional Generator.
+    """
+    def __init__(self, x_dims, x_ch, hidden_units, 
+                 g_activation_fn=tf.nn.relu,
+                 batch_norm=True):
+      """
+      Fully Connected Conditional Generator network. 
+        :param x_dims:  a list of any size > 0; the x dimentions.
+        :param x_ch: int; the channels in x.
+        :param hidden_units: a list; the number of channels in each conv layer.
+        :param g_activation_fn: an function.
+        :param batch_norm: if True, enable batch normalization.
+      """
+      # Data Config
+      if isinstance(x_dims, list) or isinstance(x_dims, tuple):
+        self.x_dims = x_dims
+      else:
+        self.x_dims = [x_dims]
+      self.x_ch = x_ch
+
+      self.batch_norm = batch_norm
+      self.hidden_units = hidden_units
+    
+      if not isinstance(g_activation_fn, list) and  self.hidden_units is not None:
+          self.g_activation_fn = [g_activation_fn] * len(self.hidden_units)
+      else:
+          self.g_activation_fn = g_activation_fn
+
+
+    def __call__(self, z, ys=None):
+        if ys is None:
+            net = z
+        else:
+            net = tf.concat([z, ys], axis=1)
+        
+        
+        with slim.arg_scope([slim.fully_connected], 
+                            weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                            normalizer_fn=slim.batch_norm if self.batch_norm else None):
+            for i, (h_unit, activation_fn) in enumerate(zip(self.hidden_units, self.g_activation_fn)):
+                net = slim.fully_connected(net, h_unit, activation_fn=activation_fn,
+                                           scope='g_full{0}'.format(i))
+        
+        out_units = 1
+        for dim in self.x_dims:
+            out_units *= dim
+            
+        out_units *= self.x_ch
+                    
+        g_out = slim.fully_connected(net, out_units, scope='g_out', 
+                                     activation_fn=tf.nn.tanh,
+                                     biases_initializer=None, 
+                                     weights_initializer=tf.truncated_normal_initializer(stddev=0.02))
+
+        return g_out
