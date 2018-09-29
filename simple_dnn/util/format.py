@@ -62,7 +62,6 @@ def flatten_unpad(input_shape_2d, desired_shape_2d, input_ch):
     if axis_1_pad_size > 0 and axis_2_pad_size > 0:
         xs = xs[:,axis_1_pad_size:-axis_1_pad_size,axis_2_pad_size:-axis_2_pad_size,:]
         
-    print xs.shape
     return np.reshape(xs, [batch_size, desired_shape_2d[0] * desired_shape_2d[1] * input_ch])
 
   return reshape
